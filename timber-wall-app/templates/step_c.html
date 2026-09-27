@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Timber Wall Assembly vs. DIN 18202 — Step C</title>
+<link rel="stylesheet" href="/static/style.css?v=9">
+<script src="/static/vendor/three.min.js"></script>
+<script src="/static/vendor/CSS2DRenderer.js"></script>
+<script src="/static/vendor/Projector.js"></script>
+<script src="/static/vendor/SVGRenderer.js"></script>
+<script src="/static/vendor/OrbitControls.js"></script>
+<script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <a href="/" class="step-tab">A · Frame</a>
+    <a href="/step-b" class="step-tab">B · Panels</a>
+    <span class="step-tab active">C · Assembly vs. DIN 18202</span>
+    <a href="/step-d" class="step-tab">D · Openings</a>
+  
+    <a href="/step-e" class="step-tab">E · As-Built Check</a>
+    <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
+  </div>
+  <h1>Step C — Final Assembly vs. DIN 18202</h1>
+  <p class="subtitle">The finished wall (frame + panels), checked as one building element. Reuses Step A's squareness/dimension checks and Step B's joint check, plus a new panel-to-panel thickness step check.</p>
+</header>
+
+<main>
+  <section class="layout">
+    <!-- LEFT: form -->
+    <div class="panel form-panel">
+      <h2>Frame Inputs (from Step A)</h2>
+      <label>Wall length (cm)</label>
+      <input type="number" id="wallLength" value="300" step="1">
+      <label>Wall height (cm)</label>
+      <input type="number" id="wallHeight" value="250" step="1">
+      <label>Framing material</label>
+      <select id="framingMaterial">
+        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
+        <option value="lvl">LVL / Kerto (EN 14374)</option>
+      </select>
+      <div id="kvhClassGroup" style="display:none">
+        <label>KVH class</label>
+        <select id="kvhClass">
+          <option value="class1">Class 1</option>
+          <option value="class2">Class 2</option>
+        </select>
+      </div>
+      <label>Number of studs (incl. end studs)</label>
+      <input type="number" id="studCount" value="5" min="2" step="1">
+      <div class="two-col">
+        <div>
+          <label>Stud width (mm)</label>
+          <input type="number" id="studWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Stud depth (mm)</label>
+          <input type="number" id="studDepth" value="120" step="1">
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label>Beam width (mm)</label>
+          <input type="number" id="beamWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Beam depth (mm)</label>
+          <input type="number" id="beamDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <h2 style="margin-top:1.6rem">Panel Inputs (from Step B)</h2>
+      <label>Panel material</label>
+      <select id="panelMaterial">
+        <option value="osb" selected>OSB (EN 300)</option>
+        <option value="plywood">Plywood (DIN EN 315)</option>
+        <option value="particleboard">Particleboard (EN 312)</option>
+        <option value="clt">CLT (EN 16351)</option>
+        <option value="mdf_family">MDF-family (EN 622)</option>
+        <option value="gfb_gpb">Gypsum (DIN EN 520)</option>
+      </select>
+      <div id="mdfSubtypeGroup" style="display:none">
+        <label>MDF board type</label>
+        <select id="mdfSubtype">
+          <option value="hardboard">Hardboard (HB) — EN 622-2</option>
+          <option value="mediumboard">Mediumboard (MBL/MBH) — EN 622-3</option>
+          <option value="softboard">Softboard (SB) — EN 622-4</option>
+          <option value="dry_process">Dry-process board (MDF) — EN 622-5</option>
+        </select>
+      </div>
+      <div id="gfbSubtypeGroup" style="display:none">
+        <label>Gypsum type</label>
+        <select id="gfbSubtype">
+          <option value="type_p">Type P</option>
+          <option value="types_ahdefir">Types A/H/D/E/F/I/R (combined)</option>
+        </select>
+      </div>
+      <label>Target sheet width (cm)</label>
+      <input type="number" id="sheetWidth" value="122" step="1">
+
+      <h2 style="margin-top:1.6rem">Assembly Inputs</h2>
+      <label>Panel thickness (mm)</label>
+      <input type="number" id="panelThickness" value="15" step="0.5">
+      <label>Thickness finish</label>
+      <select id="panelThicknessVariant">
+        <option value="unsanded" selected>Unsanded</option>
+        <option value="sanded">Sanded</option>
+      </select>
+      <p class="hint">Only used for OSB/Plywood/Particleboard - CLT's thickness formula doesn't have a sanded/unsanded split.</p>
+      <label>Target finish class (for the joint-step flatness check)</label>
+      <select id="finishClass">
+        <option value="unfinished_wall" selected>Unfinished wall</option>
+        <option value="finished_wall">Finished wall</option>
+        <option value="finished_wall_stringent">Finished wall, stringent</option>
+      </select>
+
+      <button id="buildBtn" class="calc-btn">Build assembly &amp; check</button>
+      <div id="warningsBox" class="warnings-box hidden"></div>
+    </div>
+
+    <!-- RIGHT: 3D view -->
+    <div class="panel viewer-panel">
+      <h2>3D Final Assembly</h2>
+      <div id="viewer3d"></div>
+      <p class="hint">Solid panel face = finished wall. Faint lines behind = frame reference. Banner = overall DIN 18202 verdict (RSS).</p>
+      <div class="view-controls">
+        <button type="button" class="view-btn" id="btnPerspective">3D Perspective</button>
+        <button type="button" class="view-btn" id="btnFrontView">Front View (Parallel)</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn icon-btn" id="btnZoomIn" title="Zoom in">+</button>
+        <button type="button" class="view-btn icon-btn" id="btnZoomOut" title="Zoom out">−</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn" id="btnDownloadSvg" title="Download the current 3D view as a vector SVG">⬇ SVG</button>
+        <button type="button" class="view-btn" id="btnDownloadEmf" title="Download the current 3D view as an EMF vector image (Word/PowerPoint/Excel)">⬇ EMF</button>
+      </div>
+      <div class="label-controls">
+        <label class="label-controls-item">
+          <span>Label size</span>
+          <input type="range" id="labelFontSize" min="9" max="26" value="15" step="1">
+          <span id="labelFontSizeValue">15px</span>
+        </label>
+        <label class="label-controls-item checkbox-item">
+          <input type="checkbox" id="labelVisibleToggle" checked>
+          <span>Show labels</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <h2>Consolidated Compliance Summary</h2>
+    <div id="summaryResults"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Panel-to-Panel Thickness Step (New in Step C)</h2>
+    <p class="chart-desc">Two adjacent sheets of the same nominal thickness can each land anywhere in their published thickness tolerance - the worst-case visible ridge at the seam is their combined tolerance, checked against DIN 18202's flatness limit at its tightest measuring distance (&lt;0.1m), for your selected finish class.</p>
+    <div id="stepCheckResults"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Sensitivity Analysis — What's Actually Driving Each Result</h2>
+    <p class="chart-desc">One-at-a-time analysis: each contributing tolerance source is zeroed individually to see how much the RSS result would drop - the source with the largest drop is the one actually driving that number. Answers "would a better panel grade help more than straighter studs?" directly from the numbers.</p>
+    <div class="charts-grid">
+      <div><canvas id="tornadoSquareness"></canvas></div>
+      <div><canvas id="tornadoJoint"></canvas></div>
+      <div><canvas id="tornadoThicknessStep"></canvas></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><span class="flag-unverified">Unverified</span> flags mark tolerance values ambiguous in source extraction. Overall verdict uses RSS only (the more realistic combination) - worst-case figures are shown per-check for reference but don't drive the single pass/fail banner.</p>
+</footer>
+
+<script src="/static/camera_view_state.js?v=14"></script>
+<script src="/static/label2d.js?v=14"></script>
+<script src="/static/svg_export.js?v=4"></script>
+<script src="/static/assembly3d.js?v=15"></script>
+<script src="/static/charts.js?v=14"></script>
+<script src="/static/shared_state.js?v=14"></script>
+<script src="/static/panel_state.js?v=1"></script>
+<script src="/static/main_c.js?v=16"></script>
+</body>
+</html>

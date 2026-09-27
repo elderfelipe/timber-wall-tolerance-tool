@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Timber Wall Frame Builder — Step A</title>
+<link rel="stylesheet" href="/static/style.css?v=9">
+<script src="/static/vendor/three.min.js"></script>
+<script src="/static/vendor/CSS2DRenderer.js"></script>
+<script src="/static/vendor/Projector.js"></script>
+<script src="/static/vendor/SVGRenderer.js"></script>
+<script src="/static/vendor/OrbitControls.js"></script>
+<script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <span class="step-tab active">A · Frame</span>
+    <a href="/step-b" class="step-tab">B · Panels</a>
+    <a href="/step-c" class="step-tab">C · Assembly vs. DIN 18202</a>
+    <a href="/step-d" class="step-tab">D · Openings</a>
+  
+    <a href="/step-e" class="step-tab">E · As-Built Check</a>
+    <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
+  </div>
+  <h1>Step A — Frame Configuration &amp; Tolerance Analysis</h1>
+  <p class="subtitle">Studs + beams, real geometry, DIN-18202-checked squareness. All dimensions in <strong>cm</strong> for the wall, <strong>mm</strong> for cross-sections and tolerances.</p>
+</header>
+
+<main>
+  <section class="layout">
+    <!-- LEFT: form -->
+    <div class="panel form-panel">
+      <h2>Wall &amp; Frame Inputs</h2>
+
+      <label>Wall length (cm)</label>
+      <input type="number" id="wallLength" value="300" step="1">
+
+      <label>Wall height (cm)</label>
+      <input type="number" id="wallHeight" value="250" step="1">
+
+      <label>Framing material</label>
+      <select id="framingMaterial">
+        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
+        <option value="lvl">LVL / Kerto (EN 14374)</option>
+      </select>
+
+      <div id="kvhClassGroup" style="display:none">
+        <label>KVH class (EN 15497 — dimensional/surface grade)</label>
+        <select id="kvhClass">
+          <option value="class1">Class 1</option>
+          <option value="class2">Class 2</option>
+        </select>
+
+        <label>KVH strength grade (DIN 4074-1 — separate axis, governs Bow/Twist only)</label>
+        <select id="kvhGrade">
+          <option value="">— not selected (warping check unavailable) —</option>
+          <option value="softwood">Softwood (generic)</option>
+          <option value="S7_S7K">Softwood S7 / S7K</option>
+          <option value="S10_S10K">Softwood S10 / S10K</option>
+          <option value="S13_S13K">Softwood S13 / S13K</option>
+        </select>
+      </div>
+
+      <label>Number of studs (incl. end studs)</label>
+      <input type="number" id="studCount" value="5" min="2" step="1">
+
+      <label>Building surface context (for warping vs. flatness check)</label>
+      <select id="flatnessContext">
+        <option value="unfinished_wall" selected>Unfinished wall</option>
+        <option value="finished_wall">Finished wall</option>
+        <option value="finished_wall_stringent">Finished wall, stringent</option>
+      </select>
+
+      <div class="two-col">
+        <div>
+          <label>Stud width (mm)</label>
+          <input type="number" id="studWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Stud depth (mm)</label>
+          <input type="number" id="studDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <label>Beam width (mm)</label>
+          <input type="number" id="beamWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Beam depth (mm)</label>
+          <input type="number" id="beamDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <button id="buildBtn" class="calc-btn">Build frame &amp; analyse</button>
+      <button id="downloadDxfBtn" type="button" class="view-btn" style="margin-top:0.6rem; width:100%;">⬇ Download DXF</button>
+
+      <div id="warningsBox" class="warnings-box hidden"></div>
+    </div>
+
+    <!-- RIGHT: 3D view -->
+    <div class="panel viewer-panel">
+      <h2>3D Frame View</h2>
+      <div id="viewer3d"></div>
+      <p class="hint">Drag to orbit · scroll to zoom. Orange overlay = tolerance-relevant dimensions.</p>
+      <div class="view-controls">
+        <button type="button" class="view-btn" id="btnPerspective">3D Perspective</button>
+        <button type="button" class="view-btn" id="btnFrontView">Front View (Parallel)</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn icon-btn" id="btnZoomIn" title="Zoom in">+</button>
+        <button type="button" class="view-btn icon-btn" id="btnZoomOut" title="Zoom out">−</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn" id="btnDownloadSvg" title="Download the current 3D view as a vector SVG">⬇ SVG</button>
+        <button type="button" class="view-btn" id="btnDownloadEmf" title="Download the current 3D view as an EMF vector image (Word/PowerPoint/Excel)">⬇ EMF</button>
+      </div>
+      <div class="label-controls">
+        <label class="label-controls-item">
+          <span>Label size</span>
+          <input type="range" id="labelFontSize" min="9" max="26" value="15" step="1">
+          <span id="labelFontSizeValue">15px</span>
+        </label>
+        <label class="label-controls-item checkbox-item">
+          <input type="checkbox" id="labelVisibleToggle" checked>
+          <span>Show labels</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="drawing2d-section">
+    <div class="drawing2d-header">
+      <h2>2D Technical Drawings</h2>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="bw" id="modeBW">Black &amp; White</button>
+        <button class="mode-btn" data-mode="color" id="modeColor">Color (match 3D)</button>
+      </div>
+    </div>
+    <div class="drawing2d-grid">
+      <div class="panel drawing-panel">
+        <h3>Front View (Elevation)</h3>
+        <div id="drawingElevation" class="drawing-canvas"></div>
+      </div>
+      <div class="panel drawing-panel">
+        <h3>Cross-Section (Stud &amp; Beam)</h3>
+        <div id="drawingCrossSection" class="drawing-canvas"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <h2>Tolerance Results</h2>
+    <div id="toleranceTables"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Warping vs. Flatness</h2>
+    <p class="chart-desc">Bow and crook (defined "relative to a measurement length of 2000mm" per EN 336/DIN 4074/DIN EN 14080) checked against DIN 18202's flatness limit at that same 2m distance — comparing both figures at the one span they were each actually defined at, rather than rescaling either. Since 2m falls between DIN 18202's tabulated 1m and 4m columns, the limit shown is <strong>linearly interpolated</strong> between them (per DIN 18202's own footnote: intermediate values follow a published curve, not a step function) — a disclosed approximation using only the source's real data points, not a digitization of that curve. <strong>This check covers only a 2m span within the stud.</strong> The source standards give no rule for extrapolating bow/crook to a stud's actual full height when that differs from 2m, so none is assumed here — see the note below the results.</p>
+    <div id="warpingFlatnessResults"></div>
+  </section>
+
+  <section class="charts-section">
+    <h2>Tolerance Performance</h2>
+
+    <div class="chart-card">
+      <h3>1 · Deviation budget by source</h3>
+      <p class="chart-desc">Where the combined tolerance on each dimension actually comes from: the framing member's own manufacturing tolerance vs. the DIN 18202 assembly-level allowance.</p>
+      <canvas id="chartBudget"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>2 · Permitted deviation vs. target size</h3>
+      <p class="chart-desc">How DIN 18202's permitted linear deviation (a step function of target size) and the material's own length tolerance scale with wall size. The dashed markers show your current wall.</p>
+      <canvas id="chartSize"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>3 · Stud positional tolerance: fabrication method sensitivity</h3>
+      <p class="chart-desc">Datum-referenced (jig/laser-line) layout keeps positional tolerance constant per stud. Chained (stud-to-stud tape) layout accumulates linearly — this is why jig-based fabrication matters for stud spacing accuracy. "Datum-referenced" here is modeled using DIN 18202's alignment-deviation-for-columns value as a proxy for a stud — an analogy, not a literal citation.</p>
+      <canvas id="chartStuds"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>4 · Stud-count sensitivity</h3>
+      <p class="chart-desc">What actually changes as you add studs: bay spacing shrinks, and the chained positional tolerance at the far stud grows linearly. Bow/crook are per-member material properties tied to grade/class, not to stud count, so they're covered separately below (Warping vs. Flatness) rather than shown here.</p>
+      <canvas id="chartStudCount"></canvas>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><span class="flag-unverified">Unverified</span> flags mark tolerance values the tool used that were ambiguous in the source PDF extraction — check the warnings box after building a frame.</p>
+</footer>
+
+<script src="/static/camera_view_state.js?v=14"></script>
+<script src="/static/label2d.js?v=14"></script>
+<script src="/static/svg_export.js?v=4"></script>
+<script src="/static/frame3d.js?v=16"></script>
+<script src="/static/drawing2d.js?v=14"></script>
+<script src="/static/charts.js?v=14"></script>
+<script src="/static/shared_state.js?v=14"></script>
+<script src="/static/main.js?v=19"></script>
+</body>
+</html>

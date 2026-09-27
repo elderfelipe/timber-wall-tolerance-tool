@@ -1,0 +1,788 @@
+{
+  "_readme": "Re-derived from 'Material_interface_-_Framing.pdf' and 'Material_interface_-_Sheeting.pdf' (2nd upload). Every field carries 'verified' + 'note'. 'verified: true' means the value appears unambiguously and consistently across both PDF extractions. 'verified: false' means the source table's merged/nested headers still made column-to-value mapping uncertain from text extraction alone - please confirm these directly from your original spreadsheet, they cannot be reliably reconstructed from flattened PDF text.",
+  "framing": {
+    "kvh": {
+      "label": "KVH (Solid Structural Timber)",
+      "standard": "EN 15497 / DIN 4074",
+      "dimensions": {
+        "length": {
+          "type": "unknown",
+          "verified": false,
+          "note": "Marked '***' in source, resolved by footnote: negative length deviation is NOT permitted (0 undersize), and overlength is capped by contract agreement rather than a fixed published value. Not a data gap - it's an open-ended-by-agreement tolerance, so it still can't be used numerically here."
+        },
+        "width": {
+          "type": "size_band",
+          "unit": "mm",
+          "bands": [
+            {
+              "max": 100,
+              "class1": {
+                "plus": 3,
+                "minus": 1
+              },
+              "class2": {
+                "plus": 1,
+                "minus": 1
+              }
+            },
+            {
+              "max": 300,
+              "class1": {
+                "plus": 4,
+                "minus": 2
+              },
+              "class2": {
+                "plus": 1.5,
+                "minus": 1.5
+              }
+            },
+            {
+              "max": null,
+              "class1": {
+                "plus": 5,
+                "minus": 3
+              },
+              "class2": {
+                "plus": 2.0,
+                "minus": 2.0
+              }
+            }
+          ],
+          "verified": true,
+          "note": "Confirmed consistent across three PDF extractions."
+        },
+        "thickness": {
+          "type": "size_band",
+          "unit": "mm",
+          "bands": [
+            {
+              "max": 100,
+              "class1": {
+                "plus": 3,
+                "minus": 1
+              },
+              "class2": {
+                "plus": 1,
+                "minus": 1
+              }
+            },
+            {
+              "max": 300,
+              "class1": {
+                "plus": 4,
+                "minus": 2
+              },
+              "class2": {
+                "plus": 1.5,
+                "minus": 1.5
+              }
+            },
+            {
+              "max": null,
+              "class1": {
+                "plus": 5,
+                "minus": 3
+              },
+              "class2": {
+                "plus": 2.0,
+                "minus": 2.0
+              }
+            }
+          ],
+          "verified": true,
+          "note": "Confirmed consistent across three PDF extractions."
+        },
+        "angle_of_cross_section": {
+          "type": "unknown",
+          "verified": false,
+          "note": "1:50 value in source table appears aligned with Glulam/LVL columns, not KVH - confirm."
+        },
+        "further_processing_reduction_mm": {
+          "type": "moved",
+          "note": "Moved in this revision: this allowance actually belongs to the DIN 4074-1 softwood/S7/S10/S13 grade columns, not KVH's own Class1/Class2 columns, which are blank for this row. See framing.sawn_timber_grades."
+        }
+      },
+      "warping": {
+        "bow_mm": {
+          "type": "unknown",
+          "verified": false
+        },
+        "twist_mm_per_25mm_height": {
+          "type": "unknown",
+          "verified": false
+        },
+        "crook_mm": {
+          "type": "unknown",
+          "verified": false
+        },
+        "cup": {
+          "type": "unknown",
+          "verified": false
+        },
+        "note": "The Bow/Twist values previously attributed to KVH Class1/Class2 actually belong to a SEPARATE DIN 4074-1 strength-grading system (softwood/S7/S10/S13 grades), not EN 15497's Class1/Class2 surface-quality grading. See framing.sawn_timber_grades for the correctly attributed values (S7/S10/S13, not the earlier LS7/LS10/LS13 - DIN 4074-1 is a coniferous/softwood standard; the 'LS' prefix belongs to DIN 4074-5 hardwood grading, not implemented here). KVH's own Class1/Class2 warping tolerance remains unspecified in source."
+      }
+    },
+    "glulam": {
+      "label": "Glulam / GLT (Brettschichtholz)",
+      "standard": "DIN EN 14080",
+      "dimensions": {
+        "length": {
+          "type": "size_band",
+          "unit": "m",
+          "bands": [
+            {
+              "max": 2,
+              "plus": 2,
+              "minus": 2
+            },
+            {
+              "max": 20,
+              "percent": 0.1
+            },
+            {
+              "max": null,
+              "plus": 20,
+              "minus": 20
+            }
+          ],
+          "verified": true
+        },
+        "width": {
+          "type": "fixed",
+          "plus": 2,
+          "minus": 2,
+          "verified": true,
+          "note": "Corrected per clean spreadsheet screenshot: Glulam's own width is a flat ±2mm regardless of size. The <400mm/>=400mm banded values previously assigned here actually belong to LVL (see framing.lvl.dimensions.width)."
+        },
+        "depth": {
+          "type": "size_band",
+          "unit": "mm",
+          "bands": [
+            {
+              "max": 400,
+              "plus": 4,
+              "minus": 2
+            },
+            {
+              "max": null,
+              "plus_percent": 1.0,
+              "minus_percent": 0.5
+            }
+          ],
+          "verified": true,
+          "note": "Corrected: DIN EN 14080:2013-09 Table 12 confirmed directly - h<=400mm is a FIXED +4mm/-2mm (previously blank in this dataset), h>400mm is +1%/-0.5% (previously misattached to the h<=400mm band). Verified against primary source."
+        },
+        "angle_of_cross_section": {
+          "ratio": "1:50",
+          "verified": true
+        }
+      },
+      "warping": {
+        "bow_mm": 4,
+        "crook_mm": {
+          "type": "unknown",
+          "note": "Confirmed absent: neither DIN EN 14080 Table 12 nor DIN 18203-3 SS4.5 defines a separate Crook criterion for glued laminated timber - only Bow (longitudinal) and Cup (transverse, DIN 18203-3 SS4.5.2) are defined. The previous crook_mm=4 value had no source support."
+        },
+        "cup_ratio": "1/200 of largest face",
+        "twist": {
+          "type": "not_defined",
+          "verified": true,
+          "note": "Confirmed by direct read of DIN EN 14080:2013-09 Table 12: no 'twist' criterion exists anywhere in the document for glued laminated timber - only Longitudinal warping (Bow) and a curved-member gauge check are given. This is a confirmed absence, not an unresolved gap."
+        },
+        "cup_source_note": "Confirmed by direct read of DIN 18203-3:2008-08 SS4.5.2 'Transverse bow (cup)' - NOT from DIN EN 14080, which does not mention cup at all. Source corrected in this revision."
+      }
+    },
+    "lvl": {
+      "label": "LVL (Laminated Veneer Lumber, e.g. Kerto)",
+      "standard": "EN 14374",
+      "dimensions": {
+        "length": {
+          "type": "fixed",
+          "plus": 5.0,
+          "minus": 5.0,
+          "verified": true
+        },
+        "thickness": {
+          "type": "formula",
+          "plus_base": 0.8,
+          "plus_coef": 0.03,
+          "minus_base": 0.4,
+          "minus_coef": 0.03,
+          "unit": "mm",
+          "verified": true,
+          "note": "Corrected in this revision: source gives an ASYMMETRIC formula +(0.8+0.03t) / -(0.4+0.03t), not the symmetric ±(0.8+0.03t) used previously."
+        },
+        "width": {
+          "type": "size_band",
+          "unit": "mm",
+          "bands": [
+            {
+              "max": 400,
+              "plus": 2,
+              "minus": 2
+            },
+            {
+              "max": null,
+              "percent": 0.5
+            }
+          ],
+          "verified": true,
+          "note": "New in this revision: this banded width tolerance was previously mis-assigned to Glulam. Confirmed by clean spreadsheet screenshot to belong to LVL (EN 14374)."
+        },
+        "angle_of_cross_section": {
+          "ratio": "1:50",
+          "verified": true,
+          "note": "New from EN 14374:2005 SS4.3: 'angles of the cross section shall not deviate more than 1:50 (about 1.1 degrees) from a right angle' - same figure already used for Glulam/KVH."
+        }
+      }
+    },
+    "finger_jointed": {
+      "label": "Finger-jointed structural timber",
+      "standard": "EN 15497",
+      "dimensions": {
+        "length": {
+          "type": "defer_to_en336",
+          "verified": true,
+          "note": "Confirmed by direct read of EN 15497:2014 SS5.8 'Deviation in sizes': 'The corrected sizes shall be calculated according to EN 336. They shall not deviate from the nominal width and thickness by more than the permissible deviations of the declared tolerance class given in EN 336.' Length isn't separately constrained (finger-jointing exists specifically to produce longer pieces), matching KVH's own 'no negative deviation, overlength by contract' treatment under EN 336's blanket SS4.4 rule."
+        }
+      }
+    },
+    "glulam_sections_din18203": {
+      "label": "Glued laminated solid timber and glued laminated timber sections (assembly-level)",
+      "standard": "DIN 18203-3",
+      "note": "Size-banded warping limits, target sizes in m. Confirmed by clean spreadsheet screenshot (image 3): applies to Bow and Cup across all 7 size bands; Crook given as a single flat value.",
+      "size_bands_m": [
+        0.1,
+        0.4,
+        0.8,
+        2.0,
+        6.0,
+        20.0,
+        null
+      ],
+      "warping": {
+        "bow_mm": {
+          "value": 4,
+          "gauge_length_mm": 2000,
+          "note": "Confirmed by direct read of DIN 18203-3:2008-08 SS4.5.1 'Longitudinal bow': a FLAT value 'max. 4mm over 2000mm', not banded by target size as previously modeled - corrected in this revision."
+        },
+        "cup_ratio": "1/200 of largest face",
+        "crook_mm": null,
+        "verified": true,
+        "crook_status": "not_defined_in_source: DIN 18203-3 SS4.5 defines only Longitudinal bow and Transverse bow (cup) - no separate Crook criterion exists."
+      }
+    },
+    "sawn_timber_grades": {
+      "label": "Sawn timber strength grades (DIN 4074-1, coniferous/softwood: softwood/S7/S10/S13)",
+      "standard": "DIN 4074",
+      "note": "Corrected against direct primary-source read of DIN 4074-1:2026-05 Table 2 ('Sortierkriterien fuer Kantholz und vorwiegend hochkant (K) biegebeanspruchte Bretter und Bohlen'): grade keys renamed from the previous LS7_LS7K/LS10_LS10K/LS13_LS13K to S7_S7K/S10_S10K/S13_S13K - DIN 4074-1 covers coniferous softwood and uses S7/S10/S13 exclusively; the 'LS' prefix belongs to DIN 4074-5 (hardwood grading), a separate standard not implemented anywhere in this app. Bow and twist values are confirmed IDENTICAL across all three grades for this product category (8mm bow, 1mm/25mm height twist) - the previous 12/8/8 and 2/1/1 graduations, and the crook_mm figure entirely, were Table 3's values (Bretter und Bohlen - boards and planks, a different product category) mistakenly applied to Kantholz.",
+      "grades": [
+        "softwood",
+        "S7_S7K",
+        "S10_S10K",
+        "S13_S13K"
+      ],
+      "warping": {
+        "bow_mm": {
+          "softwood": 8,
+          "S7_S7K": 8,
+          "S10_S10K": 8,
+          "S13_S13K": 8
+        },
+        "twist_mm_per_25mm_height": {
+          "softwood": 1,
+          "S7_S7K": 1,
+          "S10_S10K": 1,
+          "S13_S13K": 1
+        },
+        "verified": true
+      },
+      "further_processing_reduction_mm": {
+        "bands": [
+          {
+            "max": 100,
+            "value": 5
+          },
+          {
+            "max": null,
+            "value": 10
+          }
+        ],
+        "verified": true,
+        "note": "Applies to these grades, not confirmed to apply to KVH Class1/Class2 specifically."
+      }
+    }
+  },
+  "sheeting": {
+    "plywood": {
+      "label": "Plywood",
+      "standard": "DIN EN 315",
+      "dimensions": {
+        "length": {
+          "type": "fixed",
+          "plus": 3.5,
+          "minus": 3.5,
+          "verified": true,
+          "note": "Corrected per clean spreadsheet screenshot: ±3.5mm (was incorrectly ±3.0mm - that value belongs to OSB)."
+        },
+        "width": {
+          "type": "fixed",
+          "plus": 3.5,
+          "minus": 3.5,
+          "verified": true,
+          "note": "Corrected per clean spreadsheet screenshot: ±3.5mm (was incorrectly ±3.0mm)."
+        },
+        "thickness": {
+          "type": "plywood_thickness_table",
+          "note": "Confirmed exactly by clean spreadsheet screenshot. Two tolerance concepts - uniformity WITHIN one panel, and deviation from NOMINAL thickness - each banded by nominal thickness t (mm), split unsanded/sanded.",
+          "bands": [
+            {
+              "max": 12,
+              "unsanded_within_panel": 1.0,
+              "sanded_within_panel": 0.6,
+              "unsanded_on_nominal": {
+                "plus_base": 0.8,
+                "plus_coef": 0.03,
+                "minus_base": 0.8,
+                "minus_coef": 0.03
+              },
+              "sanded_on_nominal": {
+                "plus_base": 0.2,
+                "plus_coef": 0.03,
+                "minus_base": 0.4,
+                "minus_coef": 0.03
+              }
+            },
+            {
+              "max": 25,
+              "unsanded_within_panel": 1.5,
+              "sanded_within_panel": 0.6,
+              "unsanded_on_nominal": {
+                "plus_base": 0.8,
+                "plus_coef": 0.03,
+                "minus_base": 0.8,
+                "minus_coef": 0.03
+              },
+              "sanded_on_nominal": {
+                "plus_base": 0.2,
+                "plus_coef": 0.03,
+                "minus_base": 0.4,
+                "minus_coef": 0.03
+              }
+            },
+            {
+              "max": 30,
+              "unsanded_within_panel": 1.5,
+              "sanded_within_panel": 0.8,
+              "unsanded_on_nominal": {
+                "plus_base": 0.8,
+                "plus_coef": 0.03,
+                "minus_base": 0.8,
+                "minus_coef": 0.03
+              },
+              "sanded_on_nominal": {
+                "plus_base": 0.0,
+                "plus_coef": 0.05,
+                "minus_base": 0.4,
+                "minus_coef": 0.05
+              }
+            },
+            {
+              "max": null,
+              "unsanded_within_panel": 1.5,
+              "sanded_within_panel": 0.8,
+              "unsanded_on_nominal": {
+                "plus_base": 0.8,
+                "plus_coef": 0.03,
+                "minus_base": 0.8,
+                "minus_coef": 0.03
+              },
+              "sanded_on_nominal": {
+                "plus_base": 0.0,
+                "plus_coef": 0.03,
+                "minus_base": 0.4,
+                "minus_coef": 0.03
+              }
+            }
+          ],
+          "verified": true,
+          "min_band_mm": 3
+        },
+        "edge_straightness_mm_per_m": {
+          "value": 1.0,
+          "verified": true,
+          "note": "single value, applies across unsanded/sanded"
+        },
+        "squareness_mm_per_m": {
+          "value": 1.0,
+          "verified": true,
+          "note": "Corrected: EN 315:2000 SS7 states squareness tolerance is 1mm/m, not 2.0mm/m as previously stored (likely copied from OSB's value by mistake). Confirmed by direct read of source SS6/SS7."
+        }
+      },
+      "moisture_content_percent": {
+        "min": 8,
+        "max": 12,
+        "verified": true,
+        "note": "Confirmed by clean spreadsheet screenshot as '(10±2)%'. This was previously the unresolved '(10±2)%' figure I couldn't attribute - it's Plywood's, not Gypsum's."
+      },
+      "warping": {
+        "type": "not_applicable",
+        "note": "Confirmed by user: no warping tolerance data exists for sheeting materials in the source spreadsheet. This is a genuine gap in the source, not a missing extraction."
+      }
+    },
+    "particleboard": {
+      "label": "Particleboard",
+      "standard": "EN 312",
+      "dimensions": {
+        "length": {
+          "type": "fixed",
+          "plus": 5.0,
+          "minus": 5.0,
+          "verified": true,
+          "note": "Corrected again per newer, precisely column-lettered spreadsheet screenshot: ±5mm. Supersedes the ±0.3mm value used in the previous revision, which came from a different (evidently outdated or mis-columned) screenshot."
+        },
+        "width": {
+          "type": "fixed",
+          "plus": 5.0,
+          "minus": 5.0,
+          "verified": true,
+          "note": "Resolved: ±5mm. Previously marked unknown/blank in source."
+        },
+        "thickness": {
+          "type": "variant",
+          "variants": {
+            "sanded": {
+              "plus": 0.3,
+              "minus": 0.3,
+              "verified": true
+            },
+            "unsanded": {
+              "plus": 1.7,
+              "minus": 0.3,
+              "verified": true,
+              "note": "Corrected: asymmetric -0.3/+1.7mm (mirrors OSB's older, now-superseded value), not the symmetric ±0.8mm previously assumed by analogy with Plywood."
+            }
+          }
+        },
+        "edge_straightness_mm_per_m": {
+          "value": 1.5,
+          "verified": true
+        },
+        "squareness_mm_per_m": {
+          "value": 2.0,
+          "verified": true
+        }
+      },
+      "moisture_content_percent": {
+        "min": 5,
+        "max": 13,
+        "verified": true,
+        "note": "Confirmed by clean spreadsheet screenshot."
+      },
+      "warping": {
+        "type": "not_applicable",
+        "note": "Confirmed by user: no warping tolerance data exists for sheeting materials in the source spreadsheet. This is a genuine gap in the source, not a missing extraction."
+      }
+    },
+    "osb": {
+      "label": "Oriented Strand Board (OSB)",
+      "standard": "EN 300",
+      "dimensions": {
+        "length": {
+          "type": "fixed",
+          "plus": 3.0,
+          "minus": 3.0,
+          "verified": true
+        },
+        "width": {
+          "type": "fixed",
+          "plus": 3.0,
+          "minus": 3.0,
+          "verified": true
+        },
+        "thickness": {
+          "type": "variant",
+          "variants": {
+            "sanded": {
+              "plus": 0.3,
+              "minus": 0.3,
+              "verified": true
+            },
+            "unsanded": {
+              "plus": 0.8,
+              "minus": 0.8,
+              "verified": true
+            }
+          }
+        },
+        "edge_straightness_mm_per_m": {
+          "value": 1.5,
+          "verified": true
+        },
+        "squareness_mm_per_m": {
+          "value": 2.0,
+          "verified": true
+        }
+      },
+      "moisture_content_percent": {
+        "min": 2,
+        "max": 12,
+        "verified": true
+      },
+      "warping": {
+        "type": "not_applicable",
+        "note": "Confirmed by user: no warping tolerance data exists for sheeting materials in the source spreadsheet. This is a genuine gap in the source, not a missing extraction."
+      }
+    },
+    "clt": {
+      "label": "Cross Laminated Timber (CLT)",
+      "standard": "EN 16351",
+      "note": "Corrected in this revision: previously included an 'assembly_din18203' block (size-banded thickness/width/height/squareness/moisture) that was mis-attributed. That data actually belongs to glued-laminated timber SECTION warping tolerances in the FRAMING table (framing.glulam_sections_din18203.warping), not to CLT panels. Removed from here.",
+      "product": {
+        "standard": "EN 16351",
+        "thickness": {
+          "type": "max_of_formula",
+          "option_a_mm": 2.0,
+          "option_b_percent_of_nominal": 2.0,
+          "rule": "greater of the two",
+          "verified": true,
+          "note": "'±2mm or 2% of the nominal thickness, whichever is greater' - confirmed by clean spreadsheet screenshot. Replaces the previous <18mm/≥18mm band guess, which turned out to belong to the DIN 18203-3 assembly-level table instead (see 'assembly' below)."
+        },
+        "length": {
+          "type": "unknown",
+          "verified": false,
+          "note": "Checked directly against EN 16351:2021 SS4.1.2 - the standard defines an overall panel THICKNESS tolerance (SS4.1.2.2: +-2mm or 2% of nominal, whichever is greater) but no equivalent length/width tolerance was found anywhere in the document. The previous +-2mm value for length/width appears to be the thickness tolerance duplicated into the wrong fields - removed rather than left mis-sourced. CLT panels are typically manufactured to project-specific dimensions by agreement."
+        },
+        "width": {
+          "type": "unknown",
+          "verified": false,
+          "note": "Checked directly against EN 16351:2021 SS4.1.2 - the standard defines an overall panel THICKNESS tolerance (SS4.1.2.2: +-2mm or 2% of nominal, whichever is greater) but no equivalent length/width tolerance was found anywhere in the document. The previous +-2mm value for length/width appears to be the thickness tolerance duplicated into the wrong fields - removed rather than left mis-sourced. CLT panels are typically manufactured to project-specific dimensions by agreement."
+        }
+      },
+      "warping": {
+        "type": "not_applicable",
+        "note": "Confirmed by user: no warping tolerance data exists for sheeting materials at the product level (EN 16351). Note CLT's assembly-level entry (assembly_din18203) DOES carry warping data - that's a separate, confirmed-present dataset."
+      }
+    },
+    "mdf_family": {
+      "label": "MDF-family boards (EN 622, parts 2-5)",
+      "standard": "EN 622",
+      "note": "New in this revision: 'MDF' in the source table is actually four distinct sub-standards, each with its own nominal-thickness (NT) bands. All four share the same length/width formula: ±2mm/m, capped at ±5mm (see 'length_width_rate_capped' - use geometry.lookup_rate_capped once Step B is built).",
+      "length_width_rate_capped": {
+        "rate_mm_per_m": 2,
+        "cap_mm": 5,
+        "verified": true
+      },
+      "boards": {
+        "hardboard": {
+          "label": "Hardboard (HB)",
+          "standard_part": "EN 622-2",
+          "thickness_bands_mm": [
+            {
+              "max": 3.5,
+              "plus": 0.3,
+              "minus": 0.3
+            },
+            {
+              "max": 5.5,
+              "plus": 0.5,
+              "minus": 0.5
+            },
+            {
+              "max": null,
+              "plus": 0.7,
+              "minus": 0.7
+            }
+          ],
+          "moisture_content_percent": {
+            "min": 4,
+            "max": 9
+          },
+          "verified": true
+        },
+        "mediumboard": {
+          "label": "Mediumboard (MBL / MBH)",
+          "standard_part": "EN 622-3",
+          "thickness_bands_mm": [
+            {
+              "max": 10,
+              "plus": 0.7,
+              "minus": 0.7
+            },
+            {
+              "max": null,
+              "plus": 0.8,
+              "minus": 0.8
+            }
+          ],
+          "moisture_content_percent": {
+            "min": 4,
+            "max": 9
+          },
+          "verified": true
+        },
+        "softboard": {
+          "label": "Softboard (SB)",
+          "standard_part": "EN 622-4",
+          "thickness_bands_mm": [
+            {
+              "max": 10,
+              "plus": 0.7,
+              "minus": 0.7
+            },
+            {
+              "max": 19,
+              "plus": 1.2,
+              "minus": 1.2
+            },
+            {
+              "max": null,
+              "plus": 1.8,
+              "minus": 1.8
+            }
+          ],
+          "moisture_content_percent": {
+            "min": 4,
+            "max": 9
+          },
+          "verified": true
+        },
+        "dry_process": {
+          "label": "Dry-process board (MDF)",
+          "standard_part": "EN 622-5",
+          "thickness_bands_mm": [
+            {
+              "max": 6,
+              "plus": 0.2,
+              "minus": 0.2
+            },
+            {
+              "max": 19,
+              "plus": 0.2,
+              "minus": 0.2
+            },
+            {
+              "max": null,
+              "plus": 0.3,
+              "minus": 0.3
+            }
+          ],
+          "moisture_content_percent": {
+            "min": 4,
+            "max": 11
+          },
+          "verified": true
+        }
+      },
+      "squareness_mm_per_m": {
+        "value": 2.0,
+        "verified": true,
+        "note": "New from EN 622-1:2003 Table 1: 2mm/m, applies uniformly to all four board types (HB/MBL-MBH/SB/MDF)."
+      },
+      "edge_straightness_mm_per_m": {
+        "value": 1.5,
+        "verified": true,
+        "note": "New from EN 622-1:2003 Table 1: 1.5mm/m, applies uniformly to all four board types (HB/MBL-MBH/SB/MDF)."
+      }
+    },
+    "gfb_gpb": {
+      "label": "Gypsum Fiberboard (GFB) / Gypsum Plasterboard (GPB)",
+      "standard": "DIN EN 520",
+      "type_p": {
+        "label": "Type P",
+        "nominal_lengths_mm": [
+          1200,
+          1500,
+          1800,
+          2000
+        ],
+        "length": {
+          "type": "fixed",
+          "plus": 0,
+          "minus": 6.0,
+          "verified": true,
+          "note": "Resolved in this revision: this is Type P's length tolerance, NOT OSB's or Particleboard's (both previous guesses were wrong)."
+        },
+        "nominal_widths_mm": [
+          400,
+          600,
+          900,
+          1200
+        ],
+        "width": {
+          "type": "fixed",
+          "plus": 0,
+          "minus": 8.0,
+          "verified": true,
+          "note": "Resolved in this revision: Type P's width, not OSB's."
+        },
+        "nominal_thicknesses_mm": [
+          9.5,
+          12.5
+        ],
+        "thickness": {
+          "type": "fixed",
+          "plus": 0.6,
+          "minus": 0.6,
+          "verified": true
+        }
+      },
+      "types_ahdefir": {
+        "label": "Types A, H, D, E, F, I, R (or combined)",
+        "length": {
+          "type": "fixed",
+          "plus": 0,
+          "minus": 5.0,
+          "verified": true
+        },
+        "nominal_widths_mm": [
+          600,
+          625,
+          900,
+          1200,
+          1250
+        ],
+        "width": {
+          "type": "fixed",
+          "plus": 0,
+          "minus": 4.0,
+          "verified": true,
+          "note": "Resolved in this revision: belongs to Types A/H/D/E/F/I/R, NOT CLT (CLT's width is actually unspecified in source - see sheeting.clt.product.width)."
+        },
+        "nominal_thicknesses_mm": [
+          9.5,
+          12.5,
+          15
+        ],
+        "thickness": {
+          "type": "size_band",
+          "unit": "mm",
+          "bands": [
+            {
+              "max": 18,
+              "plus": 0.5,
+              "minus": 0.5
+            },
+            {
+              "max": null,
+              "type": "formula",
+              "coef": 0.04,
+              "note": "+-0.04 x thickness(mm), rounded to nearest 0.1mm"
+            }
+          ],
+          "verified": true,
+          "note": "Resolved by direct read of EN 520:2004+A1:2009 SS4.9.2.3: nominal thickness must be at least 6.0mm (a minimum-thickness requirement, not a tolerance - correctly not used as one). The actual tolerance is +-0.5mm for thickness below 18mm (covers the standard's own common thicknesses 9.5/12.5/15mm) and +-0.04 x thickness for >=18mm."
+        },
+        "squareness_mm_per_m": {
+          "value": 2.5,
+          "verified": true,
+          "note": "New from EN 520 SS4.9.2.4: 'deviation from squareness shall not exceed 2.5mm per metre of width' - applies to Types A/H/D/E/F/I/R only; Type P has no equivalent squareness clause in source."
+        }
+      },
+      "moisture_content_percent": {
+        "type": "not_applicable",
+        "note": "Confirmed by user + web search: DIN EN 520's defined scope (reaction to fire, water vapour permeability, flexural strength, impact resistance, thermal resistance) does not include moisture content. The '(10±2)%' figure that appeared near this section in an earlier upload is confirmed in this revision to belong to Plywood, not Gypsum."
+      }
+    }
+  }
+}

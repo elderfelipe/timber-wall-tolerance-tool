@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Timber Wall Panel Builder — Step B</title>
+<link rel="stylesheet" href="/static/style.css?v=13">
+<script src="/static/vendor/three.min.js"></script>
+<script src="/static/vendor/CSS2DRenderer.js"></script>
+<script src="/static/vendor/Projector.js"></script>
+<script src="/static/vendor/SVGRenderer.js"></script>
+<script src="/static/vendor/OrbitControls.js"></script>
+<script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <a href="/" class="step-tab">A · Frame</a>
+    <span class="step-tab active">B · Panels</span>
+    <a href="/step-c" class="step-tab">C · Assembly vs. DIN 18202</a>
+    <a href="/step-d" class="step-tab">D · Openings</a>
+  
+    <a href="/step-e" class="step-tab">E · As-Built Check</a>
+    <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
+  </div>
+  <h1>Step B — Panels on Frame &amp; Joint Tolerance</h1>
+  <p class="subtitle">Panel joints are placed on stud centerlines by design (see notes). Frame inputs below re-run Step A's geometry so the panel layout matches a real frame, not a nominal one.</p>
+</header>
+
+<main>
+  <section class="layout">
+    <!-- LEFT: form -->
+    <div class="panel form-panel">
+      <h2>Frame Inputs (from Step A)</h2>
+      <label>Wall length (cm)</label>
+      <input type="number" id="wallLength" value="300" step="1">
+      <label>Wall height (cm)</label>
+      <input type="number" id="wallHeight" value="250" step="1">
+      <label>Framing material</label>
+      <select id="framingMaterial">
+        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
+        <option value="lvl">LVL / Kerto (EN 14374)</option>
+      </select>
+      <div id="kvhClassGroup" style="display:none">
+        <label>KVH class</label>
+        <select id="kvhClass">
+          <option value="class1">Class 1</option>
+          <option value="class2">Class 2</option>
+        </select>
+      </div>
+      <label>Number of studs (incl. end studs)</label>
+      <input type="number" id="studCount" value="5" min="2" step="1">
+      <div class="two-col">
+        <div>
+          <label>Stud width (mm)</label>
+          <input type="number" id="studWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Stud depth (mm)</label>
+          <input type="number" id="studDepth" value="120" step="1">
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label>Beam width (mm)</label>
+          <input type="number" id="beamWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Beam depth (mm)</label>
+          <input type="number" id="beamDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <h2 style="margin-top:1.6rem">Panel Inputs</h2>
+      <label>Panel material</label>
+      <select id="panelMaterial">
+        <option value="osb" selected>OSB (EN 300)</option>
+        <option value="plywood">Plywood (DIN EN 315)</option>
+        <option value="particleboard">Particleboard (EN 312)</option>
+        <option value="clt">CLT (EN 16351)</option>
+        <option value="mdf_family">MDF-family (EN 622)</option>
+        <option value="gfb_gpb">Gypsum (DIN EN 520)</option>
+      </select>
+      <div id="mdfSubtypeGroup" style="display:none">
+        <label>MDF board type</label>
+        <select id="mdfSubtype">
+          <option value="hardboard">Hardboard (HB) — EN 622-2</option>
+          <option value="mediumboard">Mediumboard (MBL/MBH) — EN 622-3</option>
+          <option value="softboard">Softboard (SB) — EN 622-4</option>
+          <option value="dry_process">Dry-process board (MDF) — EN 622-5</option>
+        </select>
+      </div>
+      <div id="gfbSubtypeGroup" style="display:none">
+        <label>Gypsum type</label>
+        <select id="gfbSubtype">
+          <option value="type_p">Type P</option>
+          <option value="types_ahdefir">Types A/H/D/E/F/I/R (combined)</option>
+        </select>
+        <p class="hint">Types A-R has no published thickness tolerance in the source — Step C's thickness-step check will report it as unavailable rather than guess.</p>
+      </div>
+      <label>Target sheet width (cm)</label>
+      <input type="number" id="sheetWidth" value="122" step="1">
+      <p class="hint">Actual panel width is snapped to the nearest stud-bay boundary — see results below.</p>
+
+      <h2 style="margin-top:1.6rem">Material Estimate</h2>
+      <div class="two-col">
+        <div>
+          <label>Raw sheet width (cm)</label>
+          <input type="number" id="rawSheetWidth" value="122" step="1">
+        </div>
+        <div>
+          <label>Raw sheet length (cm)</label>
+          <input type="number" id="rawSheetLength" value="250" step="1">
+        </div>
+      </div>
+      <label>Price per sheet</label>
+      <input type="number" id="pricePerSheet" value="45" step="0.01" min="0">
+
+      <button id="buildBtn" class="calc-btn">Build panels &amp; analyse</button>
+      <div id="warningsBox" class="warnings-box hidden"></div>
+    </div>
+
+    <!-- RIGHT: 3D view -->
+    <div class="panel viewer-panel">
+      <h2>3D Frame + Panels</h2>
+      <div id="viewer3d"></div>
+      <p class="hint">Frame studs/beams behind, panel sheets semi-transparent in front. Dark lines = panel joints (on stud centerlines). Labels = combined joint tolerance (RSS), colored by pass/fail against half the stud width.</p>
+      <div class="view-controls">
+        <button type="button" class="view-btn" id="btnPerspective">3D Perspective</button>
+        <button type="button" class="view-btn" id="btnFrontView">Front View (Parallel)</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn icon-btn" id="btnZoomIn" title="Zoom in">+</button>
+        <button type="button" class="view-btn icon-btn" id="btnZoomOut" title="Zoom out">−</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn" id="btnDownloadSvg" title="Download the current 3D view as a vector SVG">⬇ SVG</button>
+        <button type="button" class="view-btn" id="btnDownloadEmf" title="Download the current 3D view as an EMF vector image (Word/PowerPoint/Excel)">⬇ EMF</button>
+      </div>
+      <div class="label-controls">
+        <label class="label-controls-item">
+          <span>Label size</span>
+          <input type="range" id="labelFontSize" min="9" max="26" value="15" step="1">
+          <span id="labelFontSizeValue">15px</span>
+        </label>
+        <label class="label-controls-item checkbox-item">
+          <input type="checkbox" id="labelVisibleToggle" checked>
+          <span>Show labels</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <h2>Panel Layout</h2>
+    <div id="panelLayoutResults"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Joint Interface Tolerance</h2>
+    <p class="chart-desc">Combines the panel's own width tolerance with the frame's stud positional tolerance (same DIN 18202 alignment-deviation figure as Step A's Chart 3), checked against half the stud width as a geometric "does the joint still land on the stud" sanity check — not a fastener-specific requirement from any source standard.</p>
+    <div id="jointResults"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Material Estimate</h2>
+    <p class="chart-desc">One raw sheet per cut panel piece, no nesting/optimization across panels — a deliberately conservative upper bound on waste, not an optimal cutting layout. Doesn't include cutting labor, delivery, or waste-disposal cost.</p>
+    <div id="materialEstimateResults"></div>
+  </section>
+
+  <section class="charts-section">
+    <h2>Tolerance Performance</h2>
+    <div class="chart-card">
+      <h3>5 · Sheet-width sensitivity</h3>
+      <p class="chart-desc">How many panel sheets the wall needs as your target sheet width changes, given joints must land on stud centerlines. Steps occur where the target width crosses a bay-count boundary.</p>
+      <canvas id="chartPanelCount"></canvas>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><span class="flag-unverified">Unverified</span> flags mark tolerance values that were ambiguous in source extraction. MDF-family and Gypsum panels aren't offered here yet — they need a sub-type selector first (mirroring KVH's strength-grade gap in Step A).</p>
+</footer>
+
+<script src="/static/camera_view_state.js?v=14"></script>
+<script src="/static/label2d.js?v=14"></script>
+<script src="/static/svg_export.js?v=4"></script>
+<script src="/static/panel3d.js?v=15"></script>
+<script src="/static/charts.js?v=14"></script>
+<script src="/static/shared_state.js?v=14"></script>
+<script src="/static/panel_state.js?v=1"></script>
+<script src="/static/main_b.js?v=16"></script>
+</body>
+</html>

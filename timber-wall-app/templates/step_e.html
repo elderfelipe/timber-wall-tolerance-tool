@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>As-Built Compliance Check — Step E</title>
+<link rel="stylesheet" href="/static/style.css?v=13">
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <a href="/" class="step-tab">A · Frame</a>
+    <a href="/step-b" class="step-tab">B · Panels</a>
+    <a href="/step-c" class="step-tab">C · Assembly vs. DIN 18202</a>
+    <a href="/step-d" class="step-tab">D · Openings</a>
+    <span class="step-tab active">E · As-Built Check</span>
+    <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
+  </div>
+  <h1>Step E — As-Built Compliance Check</h1>
+  <p class="subtitle">DIN 18202 Section 6 ("Compliance control") compares an actual, site-measured dimension against the permitted deviation - a workflow this app computes everywhere else but never let you actually use. Enter what you measured on site; everything else here is the design values already computed in Steps A/D.</p>
+</header>
+
+<main>
+  <section class="layout">
+    <div class="panel form-panel">
+      <h2>Design Values (from Step A)</h2>
+      <label>Wall length (cm)</label>
+      <input type="number" id="wallLength" value="400" step="1">
+      <label>Wall height (cm)</label>
+      <input type="number" id="wallHeight" value="250" step="1">
+      <label>Framing material</label>
+      <select id="framingMaterial">
+        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
+        <option value="lvl">LVL / Kerto (EN 14374)</option>
+      </select>
+      <div id="kvhClassGroup" style="display:none">
+        <label>KVH class</label>
+        <select id="kvhClass">
+          <option value="class1">Class 1</option>
+          <option value="class2">Class 2</option>
+        </select>
+      </div>
+      <label>Number of studs (incl. end studs)</label>
+      <input type="number" id="studCount" value="7" min="2" step="1">
+      <div class="two-col">
+        <div>
+          <label>Stud width (mm)</label>
+          <input type="number" id="studWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Stud depth (mm)</label>
+          <input type="number" id="studDepth" value="120" step="1">
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label>Beam width (mm)</label>
+          <input type="number" id="beamWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Beam depth (mm)</label>
+          <input type="number" id="beamDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <h2 style="margin-top:1.6rem">Measured Values</h2>
+      <p class="hint">Leave any field blank to skip that check.</p>
+      <label>Measured length (cm)</label>
+      <input type="number" id="measLength" step="0.1" placeholder="not measured">
+      <label>Measured height (cm)</label>
+      <input type="number" id="measHeight" step="0.1" placeholder="not measured">
+      <div class="two-col">
+        <div>
+          <label>Measured diagonal 1 (cm)</label>
+          <input type="number" id="measDiag1" step="0.1" placeholder="not measured">
+        </div>
+        <div>
+          <label>Measured diagonal 2 (cm, optional)</label>
+          <input type="number" id="measDiag2" step="0.1" placeholder="not measured">
+        </div>
+      </div>
+
+      <div id="openingsSection" style="display:none">
+        <h2 style="margin-top:1.6rem">Openings (from Step D)</h2>
+        <p class="hint">Loaded from your last Step D session. Leave fields blank to skip.</p>
+        <div id="openingMeasurementsList"></div>
+      </div>
+
+      <button id="checkBtn" class="calc-btn">Check as-built values</button>
+      <div id="warningsBox" class="warnings-box hidden"></div>
+    </div>
+
+    <div class="panel viewer-panel">
+      <h2>Compliance Results</h2>
+      <div id="asBuiltResults">
+        <p class="hint">Enter at least one measured value and click "Check as-built values".</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>F1: a single measured diagonal is compared against the nominal diagonal already computed in Step A - not two diagonals compared to each other (a different, equally valid site method). F2: each measured value is checked against both the worst-case and RSS permitted deviation, matching Step C's convention of showing both rather than picking one for you.</p>
+</footer>
+
+<script src="/static/shared_state.js?v=13"></script>
+<script src="/static/opening_state.js?v=13"></script>
+<script src="/static/main_e.js?v=13"></script>
+</body>
+</html>

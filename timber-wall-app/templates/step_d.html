@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Timber Wall Openings vs. DIN 18202 — Step D</title>
+<link rel="stylesheet" href="/static/style.css?v=13">
+<script src="/static/vendor/three.min.js"></script>
+<script src="/static/vendor/CSS2DRenderer.js"></script>
+<script src="/static/vendor/Projector.js"></script>
+<script src="/static/vendor/SVGRenderer.js"></script>
+<script src="/static/vendor/OrbitControls.js"></script>
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <a href="/" class="step-tab">A · Frame</a>
+    <a href="/step-b" class="step-tab">B · Panels</a>
+    <a href="/step-c" class="step-tab">C · Assembly vs. DIN 18202</a>
+    <span class="step-tab active">D · Openings</span>
+    <a href="/step-e" class="step-tab">E · As-Built Check</a>
+    <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
+  </div>
+  <h1>Step D — Window / Door Openings vs. DIN 18202</h1>
+  <p class="subtitle">Adds opening framing (jack studs, king studs, header, sill) on top of Step A's frame. Rough-opening width/height tolerance checked against DIN 18202 Table 1's "Openings" rows.</p>
+</header>
+
+<main>
+  <section class="layout">
+    <div class="panel form-panel">
+      <h2>Frame Inputs (from Step A)</h2>
+      <label>Wall length (cm)</label>
+      <input type="number" id="wallLength" value="400" step="1">
+      <label>Wall height (cm)</label>
+      <input type="number" id="wallHeight" value="250" step="1">
+      <label>Framing material</label>
+      <select id="framingMaterial">
+        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
+        <option value="lvl">LVL / Kerto (EN 14374)</option>
+      </select>
+      <div id="kvhClassGroup" style="display:none">
+        <label>KVH class</label>
+        <select id="kvhClass">
+          <option value="class1">Class 1</option>
+          <option value="class2">Class 2</option>
+        </select>
+      </div>
+      <label>Number of studs (incl. end studs)</label>
+      <input type="number" id="studCount" value="7" min="2" step="1">
+      <div class="two-col">
+        <div>
+          <label>Stud width (mm)</label>
+          <input type="number" id="studWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Stud depth (mm)</label>
+          <input type="number" id="studDepth" value="120" step="1">
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label>Beam width (mm)</label>
+          <input type="number" id="beamWidth" value="60" step="1">
+        </div>
+        <div>
+          <label>Beam depth (mm)</label>
+          <input type="number" id="beamDepth" value="120" step="1">
+        </div>
+      </div>
+
+      <h2 style="margin-top:1.6rem">Openings</h2>
+      <label class="label-controls-item checkbox-item" style="margin-bottom:0.8rem">
+        <input type="checkbox" id="finishedJambs">
+        <span>Finished-surface jambs (tighter DIN 18202 limit)</span>
+      </label>
+      <div id="openingsList"></div>
+      <button id="addOpeningBtn" type="button" class="view-btn" style="margin-top:0.5rem">+ Add another opening</button>
+
+      <button id="buildBtn" class="calc-btn" style="margin-top:1.2rem">Build openings &amp; check</button>
+      <button id="downloadDxfBtn" type="button" class="view-btn" style="margin-top:0.6rem; width:100%;">⬇ Download DXF</button>
+      <div id="warningsBox" class="warnings-box hidden"></div>
+    </div>
+
+    <div class="panel viewer-panel">
+      <h2>3D Frame with Openings</h2>
+      <div id="viewer3d"></div>
+      <p class="hint">Orange outline = each opening's rough-opening boundary. Darker members = jack/king studs, header, sill (new in Step D). Labels = width/height tolerance vs. DIN 18202.</p>
+      <div class="view-controls">
+        <button type="button" class="view-btn" id="btnPerspective">3D Perspective</button>
+        <button type="button" class="view-btn" id="btnFrontView">Front View (Parallel)</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn icon-btn" id="btnZoomIn" title="Zoom in">+</button>
+        <button type="button" class="view-btn icon-btn" id="btnZoomOut" title="Zoom out">−</button>
+        <span class="view-controls-sep"></span>
+        <button type="button" class="view-btn" id="btnDownloadSvg" title="Download the current 3D view as a vector SVG">⬇ SVG</button>
+        <button type="button" class="view-btn" id="btnDownloadEmf" title="Download the current 3D view as an EMF vector image (Word/PowerPoint/Excel)">⬇ EMF</button>
+      </div>
+      <div class="label-controls">
+        <label class="label-controls-item">
+          <span>Label size</span>
+          <input type="range" id="labelFontSize" min="9" max="26" value="15" step="1">
+          <span id="labelFontSizeValue">15px</span>
+        </label>
+        <label class="label-controls-item checkbox-item">
+          <input type="checkbox" id="labelVisibleToggle" checked>
+          <span>Show labels</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <h2>Opening Tolerance Results</h2>
+    <div id="openingResults"></div>
+  </section>
+</main>
+
+<footer>
+  <p>D1: cripple studs above headers / below sills are not modeled - they don't affect the rough-opening tolerance check itself. D2: jack/king studs and header/sill reuse the frame's own stud and beam cross-sections, since Step A has no separate header-size input. D4: width/height tolerance combines the same datum-referenced DIN 18202 alignment figure Step A/B use for stud/joint position, checked against DIN 18202 Table 1's "Openings" (or "Openings with finished-surface jambs") rows.</p>
+</footer>
+
+<template id="openingRowTemplate">
+  <div class="opening-row" data-index="0">
+    <div class="opening-row-header">
+      <strong>Opening <span class="opening-num">1</span></strong>
+      <button type="button" class="remove-opening-btn view-btn icon-btn" title="Remove">×</button>
+    </div>
+    <div class="two-col">
+      <div>
+        <label>Type</label>
+        <select class="opening-type">
+          <option value="window">Window</option>
+          <option value="door">Door</option>
+        </select>
+      </div>
+      <div>
+        <label>Position from wall start (cm)</label>
+        <input type="number" class="opening-x" value="50" step="1">
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <label>Width (cm)</label>
+        <input type="number" class="opening-width" value="90" step="1">
+      </div>
+      <div>
+        <label>Height (cm)</label>
+        <input type="number" class="opening-height" value="120" step="1">
+      </div>
+    </div>
+    <div class="opening-sill-group">
+      <label>Sill height (cm)</label>
+      <input type="number" class="opening-sill" value="90" step="1">
+    </div>
+  </div>
+</template>
+
+<script src="/static/camera_view_state.js?v=14"></script>
+<script src="/static/label2d.js?v=14"></script>
+<script src="/static/svg_export.js?v=4"></script>
+<script src="/static/opening3d.js?v=15"></script>
+<script src="/static/shared_state.js?v=14"></script>
+<script src="/static/opening_state.js?v=14"></script>
+<script src="/static/main_d.js?v=15"></script>
+</body>
+</html>

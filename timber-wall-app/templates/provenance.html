@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Data &amp; Sources — Timber Wall Tolerance Tool</title>
+<link rel="stylesheet" href="/static/style.css?v=7">
+</head>
+<body>
+<header>
+  <div class="step-tabs">
+    <a href="/" class="step-tab">A · Frame</a>
+    <a href="/step-b" class="step-tab">B · Panels</a>
+    <a href="/step-c" class="step-tab">C · Assembly vs. DIN 18202</a>
+    <a href="/step-d" class="step-tab">D · Openings</a>
+    <a href="/step-e" class="step-tab">E · As-Built Check</a>
+    <span class="step-tab step-tab-secondary active">Data &amp; Sources</span>
+  </div>
+  <h1>Data &amp; Sources</h1>
+  <p class="subtitle">Every standard this tool draws from, and a live count of what's actually been verified against its primary source versus what's still an open question — computed from the current data files, not a static claim.</p>
+</header>
+
+<main>
+  <section class="results-section">
+    <div id="statsCard"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Standards Used</h2>
+    <div id="standardsTable"></div>
+  </section>
+
+  <section class="results-section">
+    <h2>Currently Unverified Items</h2>
+    <p class="chart-desc">Every field below is flagged in the data itself, not silently assumed — each carries the reason it couldn't be confirmed. Closing these needs better source material, not guessing.</p>
+    <div id="unverifiedTable"></div>
+  </section>
+</main>
+
+<footer>
+  <p>"Source confirmed" means the actual standard document was uploaded and read directly during this project. Where it's marked no, the value was inherited from an earlier compiled table and has not yet been independently re-verified — see the Working Sheet exports for the framing-side verification already completed against EN 336, DIN 4074-1, and DIN 4074-5.</p>
+</footer>
+
+<script src="/static/main_provenance.js?v=1"></script>
+</body>
+</html>

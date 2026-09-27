@@ -1,0 +1,44 @@
+{
+  "linear": {
+    "unit": "mm",
+    "target_size_unit": "m",
+    "bands": [1, 3, 6, 15, 30, null],
+    "rows": {
+      "plan_dimensions":            {"label": "Dimensions in plan (length, width, modular sizes, centrelines)", "values": [10, 12, 16, 20, 24, 30]},
+      "elevation_dimensions":       {"label": "Dimensions in elevation (storey heights, brackets)",              "values": [10, 16, 16, 20, 30, 30]},
+      "clear_dimensions_plan":      {"label": "Clear dimensions in plan (between supports/piers)",               "values": [12, 16, 20, 24, 30, null]},
+      "clear_dimensions_elevation": {"label": "Clear dimensions in elevation (below floors/beams)",               "values": [16, 20, 20, 30, null, null]},
+      "openings":                   {"label": "Openings (windows, doors, fitments)",                             "values": [10, 12, 16, null, null, null]},
+      "openings_finished_jambs":    {"label": "Openings with finished-surface jambs",                            "values": [8, 10, 12, null, null, null]}
+    }
+  },
+  "angular": {
+    "unit": "mm",
+    "target_size_unit": "m",
+    "bands": [0.5, 1, 3, 6, 15, 30, null],
+    "values": [3, 6, 8, 12, 16, 20, 30],
+    "label": "Vertical, horizontal and inclined surfaces"
+  },
+  "flatness": {
+    "unit": "mm",
+    "measuring_distance_unit": "m",
+    "bands": [0.1, 1, 4, 10, 15],
+    "rows": {
+      "unfinished_floor":        {"label": "Unfinished upper surfaces of floors/subfloors/concrete bases", "values": [10, 15, 20, 25, 30]},
+      "floor_to_receive_screed": {"label": "Unfinished floor to receive bonded/floating screed",           "values": [5, 8, 12, 15, 20]},
+      "finished_floor_minor":    {"label": "Finished floor surface, minor purposes",                        "values": [5, 8, 12, 15, 20]},
+      "finished_floor_wearing":  {"label": "Finished floor (wearing course / tiled / bonded)",              "values": [2, 4, 10, 12, 15]},
+      "finished_floor_stringent":{"label": "Finished floor, stringent requirements",                        "values": [1, 3, 9, 12, 15]},
+      "unfinished_wall":         {"label": "Unfinished walls and undersides of concrete slabs",              "values": [5, 10, 15, 25, 30]},
+      "finished_wall":           {"label": "Finished walls / wall claddings / linings / suspended ceilings", "values": [3, 5, 10, 20, 25]},
+      "finished_wall_stringent": {"label": "Finished wall, stringent requirements",                          "values": [2, 3, 8, 15, 20]}
+    }
+  },
+  "alignment_columns": {
+    "unit": "mm",
+    "target_size_unit": "m",
+    "bands": [3, 6, 15, 30, null],
+    "values": [8, 12, 16, 20, 30],
+    "label": "Permitted alignment deviation for columns"
+  }
+}
