@@ -205,13 +205,11 @@ def lookup_din18202_flatness(din, row_key, distance_m):
 
 # Maps (material, axis) -> which key in materials.json 'dimensions' holds
 # the relevant cross-section tolerance. Naming is inconsistent across the
-# source standards (KVH uses width/thickness, Glulam uses width/depth, LVL
-# only publishes a thickness formula) so this mapping is explicit rather
+# source standards (KVH uses width/thickness, Glulam uses width/depth) so this mapping is explicit rather
 # than assumed.
 _CROSS_SECTION_KEY = {
     ("kvh", "width"): "width", ("kvh", "depth"): "thickness",
     ("glulam", "width"): "width", ("glulam", "depth"): "depth",
-    ("lvl", "width"): None, ("lvl", "depth"): "thickness",
 }
 
 
@@ -230,7 +228,7 @@ def lookup_cross_section_tolerance(materials, material_key, axis, target_mm, cla
         plus, minus = lookup_size_band(spec, target_mm, class_key, target_mm=target_mm)
         return plus, minus, spec.get("verified", False), spec.get("note")
     if spec["type"] == "formula":
-        # asymmetric formula support, e.g. LVL thickness (EN 14374):
+        # asymmetric formula support:
         # plus = plus_base + plus_coef*t , minus = minus_base + minus_coef*t
         plus = spec.get("plus_base", 0) + spec.get("plus_coef", 0) * target_mm
         minus = spec.get("minus_base", spec.get("plus_base", 0)) + spec.get("minus_coef", spec.get("plus_coef", 0)) * target_mm
@@ -273,38 +271,45 @@ def get_warping_mm(materials, material_key, class_key, prop, kvh_grade=None):
     'twist_mm_per_25mm_height' - NOT 'crook_mm': DIN 4074-1's Kantholz
     table has no crook criterion at all, see the note below) on a framing
     material. Returns (None, note) if not available - not every material
-    publishes every property (e.g. LVL has no warping section at all in
-    the source table).
+    publishes every property.
 
-    KVH is a special case: EN 15497's Class1/Class2 (dimensional/surface
-    grading) and DIN 4074-1's strength grades (softwood, S7/S7K, S10/
-    S10K, S13/S13K) are two SEPARATE, independent classification systems
-    for the same physical timber - the source table's Bow/Twist values
-    are attached to the strength-grade axis, not Class1/2. So for
-    material_key=='kvh', this looks up 'sawn_timber_grades' (keyed by
-    kvh_grade) instead of 'kvh' itself, which correctly has no warping
-    data of its own.
+    KVH is a special case: EN 336's tolerance classes 1/2 (EN 336 clause
+    4.3 - dimensional sizing) and DIN 4074-1's strength grades (softwood,
+    S7/S7K, S10/S10K, S13/S13K) are two SEPARATE, independent
+    classification systems for the same physical timber - the source
+    table's Bow/Twist values are attached to the strength-grade axis, not
+    the EN 336 tolerance-class axis. So for material_key=='kvh', this
+    looks up 'sawn_timber_grades' (keyed by kvh_grade) instead of 'kvh'
+    itself, which correctly has no warping data of its own.
 
     Confirmed by direct read of DIN 4074-1:2026-05 Table 2 ('Sortier­
     kriterien fuer Kantholz'): Laengskruemmung (bow, 8mm) and Verdrehung
     (twist, 1mm/25mm height) are IDENTICAL across S7/S10/S13 for this
-    product category - not graduated by grade - and no separate crook
-    ('Querkruemmung') criterion exists for Kantholz at all; that concept
-    only appears in Table 3 for Bretter und Bohlen (boards and planks),
-    a different product category that studs/beams don't belong to."""
+    product category - not graduated by grade. Note 'Querkruemmung'
+    (if it appeared here) would mean CUP, not crook - but no such
+    criterion exists for Kantholz at all: DIN 4074-1 covers curvature in
+    both directions with the one Laengskruemmung (longitudinal
+    curvature) value; a distinct Querkruemmung/cup concept only appears
+    in Table 3 for Bretter und Bohlen (boards and planks), a different
+    product category that studs/beams don't belong to. These limits are
+    given in DIN 4074-1 clause 5.7.2 at a 2000mm measuring length,
+    within the ceilings set by EN 14081-1 Table A.2; EN 14081-1 allows
+    pro-rata adjustment of these limits for other measuring lengths,
+    which this tool does not apply."""
     if material_key == "kvh":
         grades = materials["framing"].get("sawn_timber_grades", {})
         w = grades.get("warping", {})
         val = w.get(prop)
         if val is None:
             if prop == "crook_mm":
-                return None, ("DIN 4074-1:2026-05 Table 2 defines no separate crook ('Querkruemmung') "
-                               "criterion for Kantholz (squared timber) - only Laengskruemmung (bow) and "
-                               "Verdrehung (twist) exist for this product category. Confirmed absent, not "
-                               "an unresolved data gap.")
+                return None, ("'Querkruemmung' means cup, not crook - and DIN 4074-1:2026-05 Table 2 "
+                               "defines no separate cup criterion for Kantholz (squared timber) either: "
+                               "it covers curvature in both directions with the one Laengskruemmung "
+                               "(longitudinal curvature) value; only that and Verdrehung (twist) exist "
+                               "for this product category. Confirmed absent, not an unresolved data gap.")
             return None, f"'{prop}' not specified for sawn timber strength grades"
         if not kvh_grade:
-            return None, "No strength grade selected - Bow/Twist are indexed by DIN 4074-1 strength grade (softwood/S7/S10/S13), not by EN 15497 Class1/Class2"
+            return None, "No strength grade selected - Bow/Twist are indexed by DIN 4074-1 strength grade (softwood/S7/S10/S13), not by EN 336 tolerance class 1/2"
         if isinstance(val, dict) and kvh_grade in val:
             return val[kvh_grade], None
         return None, f"'{prop}' not specified for grade '{kvh_grade}'"
@@ -332,7 +337,7 @@ def build_frame(config, materials, din):
     """
     config: {
       wall_length_cm, wall_height_cm,
-      framing_material ('kvh'|'glulam'|'lvl'),
+      framing_material ('kvh'|'glulam'),
       kvh_class ('class1'|'class2', only used if framing_material=='kvh'),
       stud_width_mm, stud_depth_mm,
       beam_width_mm, beam_depth_mm,
@@ -429,10 +434,29 @@ def build_frame(config, materials, din):
     din_h_mm, din_h_label = lookup_din18202_linear(din, "elevation_dimensions", H / 100.0)
 
     # --- combine (worst case + RSS) ------------------------------------
-    length_wc = mat_len_plus + din_len_mm
-    length_rss = math.sqrt(mat_len_plus ** 2 + din_len_mm ** 2)
-    height_wc = mat_h_plus + din_h_mm
-    height_rss = math.sqrt(mat_h_plus ** 2 + din_h_mm ** 2)
+    # A9. ASYMMETRIC LIMITS: a limit such as -1/+3 mm is NOT reduced to one
+    #     symmetric number. The plus side and the minus side are combined with
+    #     the (symmetric) DIN 18202 allowance separately. The headline value
+    #     is the side that gives the larger result (the "governing" side), so
+    #     a pass means that BOTH sides pass. No value is assumed: every number
+    #     comes from the standards.
+    def _sides(mat_plus, mat_minus, din_mm):
+        out = {}
+        for side, m in (("plus", mat_plus), ("minus", mat_minus)):
+            out[side] = {"material_mm": m, "worst_case_mm": m + din_mm,
+                         "rss_mm": math.sqrt(m ** 2 + din_mm ** 2)}
+        gov = "plus" if out["plus"]["rss_mm"] >= out["minus"]["rss_mm"] else "minus"
+        out["governing"] = gov
+        return out
+
+    length_sides = _sides(mat_len_plus, mat_len_minus, din_len_mm)
+    height_sides = _sides(mat_h_plus, mat_h_minus, din_h_mm)
+    mat_len_gov = length_sides[length_sides["governing"]]["material_mm"]
+    mat_h_gov = height_sides[height_sides["governing"]]["material_mm"]
+    length_wc = length_sides[length_sides["governing"]]["worst_case_mm"]
+    length_rss = length_sides[length_sides["governing"]]["rss_mm"]
+    height_wc = height_sides[height_sides["governing"]]["worst_case_mm"]
+    height_rss = height_sides[height_sides["governing"]]["rss_mm"]
 
     # --- diagonal via linearized error propagation (A4) ----------------
     D = diagonal_nominal_cm * 10.0  # mm
@@ -444,19 +468,25 @@ def build_frame(config, materials, din):
 
     # --- squareness limit (A5) -----------------------------------------
     squareness_limit_mm = lookup_din18202_angular(din, diagonal_nominal_cm / 100.0)
-    squareness_pass_wc = diagonal_wc <= squareness_limit_mm
-    squareness_pass_rss = diagonal_rss <= squareness_limit_mm
+    # A value exactly equal to the limit passes (limit is "not more than").
+    # Floating-point arithmetic can return 16.000000000000004 for a value that
+    # is mathematically 16, so the comparison uses a 1e-9 mm tolerance. This
+    # is not an assumption about the standard: it only removes arithmetic noise.
+    squareness_pass_wc = diagonal_wc <= squareness_limit_mm + 1e-9
+    squareness_pass_rss = diagonal_rss <= squareness_limit_mm + 1e-9
 
     tolerances = {
         "length": {
             "target_cm": L,
             "material_plus_mm": round(mat_len_plus, 3), "material_minus_mm": round(mat_len_minus, 3),
+            "material_governing_mm": round(mat_len_gov, 3), "governing_side": length_sides["governing"],
             "din_mm": din_len_mm, "din_label": din_len_label,
             "worst_case_mm": round(length_wc, 3), "rss_mm": round(length_rss, 3),
         },
         "height": {
             "target_cm": H,
             "material_plus_mm": round(mat_h_plus, 3), "material_minus_mm": round(mat_h_minus, 3),
+            "material_governing_mm": round(mat_h_gov, 3), "governing_side": height_sides["governing"],
             "din_mm": din_h_mm, "din_label": din_h_label,
             "worst_case_mm": round(height_wc, 3), "rss_mm": round(height_rss, 3),
         },
@@ -477,7 +507,7 @@ def build_frame(config, materials, din):
     # --- chart 1: deviation budget by source ----------------------------
     deviation_budget = {
         "labels": ["Length (wall)", "Height (wall)", "Diagonal (derived)"],
-        "material_mm": [round(mat_len_plus, 3), round(mat_h_plus, 3), None],
+        "material_mm": [round(mat_len_gov, 3), round(mat_h_gov, 3), None],
         "din_mm": [din_len_mm, din_h_mm, None],
         "worst_case_mm": [round(length_wc, 3), round(height_wc, 3), round(diagonal_wc, 3)],
         "rss_mm": [round(length_rss, 3), round(height_rss, 3), round(diagonal_rss, 3)],
@@ -552,8 +582,6 @@ def build_frame(config, materials, din):
 
     if bow_mm is None:
         warnings.append(f"Bow vs. flatness check skipped: {bow_note}")
-    if crook_mm is None:
-        warnings.append(f"Crook vs. flatness check skipped: {crook_note}")
 
     warping_flatness_check = {
         "reference_distance_m": REFERENCE_DISTANCE_M,
@@ -566,17 +594,17 @@ def build_frame(config, materials, din):
         "crook_pass": (crook_mm <= flatness_limit_mm) if crook_mm is not None else None,
         "scope_note": (
             "This check is valid only for a 2m span within the stud - the distance bow "
-            "(EN 336/DIN 4074/DIN EN 14080) and this flatness limit (DIN 18202) are "
-            "actually defined at. It is NOT the stud's full-height deflection if the "
-            "wall height differs from 2m: no rule for extrapolating bow to other "
-            "member lengths exists in the source standards, and none has been assumed or "
-            "invented here. Crook is checked alongside bow where a material's source data "
-            "defines one, but none of this app's framing materials currently do - see the "
-            "Crook row's own note for why, material by material. The flatness limit shown "
-            "is linearly interpolated between DIN 18202's tabulated 1m and 4m columns (per "
-            "its own footnote: intermediate values come from a published curve, not a step "
-            "function) - an explicit approximation of that curve using only the source's "
-            "actual data points, not a digitization of the curve itself."
+            "(DIN 4074-1 clause 5.7.2 and DIN EN 14080, within the ceilings of EN 14081-1 "
+            "Table A.2) and this flatness limit (DIN 18202) are actually defined at. It is "
+            "NOT the stud's full-height deflection if the wall height differs from 2m: "
+            "EN 14081-1 (Table A.2, note a) allows pro-rata adjustment to other lengths, "
+            "which this tool does not apply - the 2000mm figures are used as-is "
+            "regardless of actual stud height. Twist is not checked here. The flatness "
+            "limit shown is linearly interpolated between DIN 18202's tabulated 1m and 4m "
+            "columns (per its own footnote: intermediate values come from a published "
+            "curve, not a step function) - an explicit approximation of that curve using "
+            "only the source's actual data points, not a digitization of the curve "
+            "itself."
         ),
     }
 

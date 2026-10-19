@@ -78,7 +78,7 @@ function renderJointResults(jc) {
   container.innerHTML = `
     <table class="result-table">
       <tr><th>Component</th><th>Value</th></tr>
-      <tr><td>Panel width tolerance</td><td>±${fmt(jc.panel_width_tolerance_mm)} mm</td></tr>
+      <tr><td>Panel width tolerance</td><td>${jc.panel_width_plus_mm === jc.panel_width_minus_mm ? "±" + fmt(jc.panel_width_tolerance_mm) + " mm" : "+" + fmt(jc.panel_width_plus_mm) + " / −" + fmt(jc.panel_width_minus_mm) + " mm (each side evaluated separately; governing side: " + (jc.sides.governing === "plus" ? "+" : "−") + ")"}</td></tr>
       <tr><td>Stud positional tolerance (DIN 18202 alignment)</td><td>±${fmt(jc.stud_positional_tolerance_mm)} mm</td></tr>
       <tr><td>Combined worst-case</td><td>${fmt(jc.combined_worst_case_mm)} mm</td></tr>
       <tr><td>Combined RSS</td><td>${fmt(jc.combined_rss_mm)} mm</td></tr>

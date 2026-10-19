@@ -40,16 +40,15 @@
 
       <label>Framing material</label>
       <select id="framingMaterial">
-        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="kvh">KVH (EN 336, DIN 4074-1)</option>
         <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
-        <option value="lvl">LVL / Kerto (EN 14374)</option>
       </select>
 
       <div id="kvhClassGroup" style="display:none">
-        <label>KVH class (EN 15497 — dimensional/surface grade)</label>
+        <label>KVH class (EN 336 — tolerance class)</label>
         <select id="kvhClass">
-          <option value="class1">Class 1</option>
-          <option value="class2">Class 2</option>
+          <option value="class1">EN 336 tolerance class 1</option>
+          <option value="class2">EN 336 tolerance class 2</option>
         </select>
 
         <label>KVH strength grade (DIN 4074-1 — separate axis, governs Bow/Twist only)</label>
@@ -156,7 +155,7 @@
 
   <section class="results-section">
     <h2>Warping vs. Flatness</h2>
-    <p class="chart-desc">Bow and crook (defined "relative to a measurement length of 2000mm" per EN 336/DIN 4074/DIN EN 14080) checked against DIN 18202's flatness limit at that same 2m distance — comparing both figures at the one span they were each actually defined at, rather than rescaling either. Since 2m falls between DIN 18202's tabulated 1m and 4m columns, the limit shown is <strong>linearly interpolated</strong> between them (per DIN 18202's own footnote: intermediate values follow a published curve, not a step function) — a disclosed approximation using only the source's real data points, not a digitization of that curve. <strong>This check covers only a 2m span within the stud.</strong> The source standards give no rule for extrapolating bow/crook to a stud's actual full height when that differs from 2m, so none is assumed here — see the note below the results.</p>
+    <p class="chart-desc">Bow (defined "relative to a measurement length of 2000mm" per DIN 4074-1 clause 5.7.2 and DIN EN 14080, within the ceilings of EN 14081-1 Table A.2) checked against DIN 18202's flatness limit at that same 2m distance — comparing both figures at the one span they were each actually defined at, rather than rescaling either. Since 2m falls between DIN 18202's tabulated 1m and 4m columns, the limit shown is <strong>linearly interpolated</strong> between them (per DIN 18202's own footnote: intermediate values follow a published curve, not a step function) — a disclosed approximation using only the source's real data points, not a digitization of that curve. <strong>This check covers only a 2m span within the stud.</strong> EN 14081-1 (Table A.2, note a) allows pro-rata adjustment to other lengths, which this tool does not apply — see the note below the results. Twist is not checked here.</p>
     <div id="warpingFlatnessResults"></div>
   </section>
 
@@ -200,6 +199,6 @@
 <script src="/static/drawing2d.js?v=14"></script>
 <script src="/static/charts.js?v=14"></script>
 <script src="/static/shared_state.js?v=14"></script>
-<script src="/static/main.js?v=19"></script>
+<script src="/static/main.js?v=20"></script>
 </body>
 </html>

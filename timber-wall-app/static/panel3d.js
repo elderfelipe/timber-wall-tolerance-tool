@@ -19,7 +19,6 @@ const PanelViewer3D = (function () {
     osb: 0xc7a45e,
     plywood: 0xe0c294,
     particleboard: 0xb99b78,
-    clt: 0xead9b8,
   };
 
   function init(containerEl) {

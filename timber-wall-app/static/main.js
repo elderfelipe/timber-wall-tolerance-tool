@@ -102,7 +102,6 @@ function renderWarpingFlatness(check) {
       <tr><th>Check</th><th>Value / Result</th></tr>
       ${flatnessRow}
       ${warpRow("Bow", check.bow_mm, check.bow_pass)}
-      ${warpRow("Crook", check.crook_mm, check.crook_pass)}
     </table>
     <div class="warnings-box">${check.scope_note}</div>`;
 }

@@ -23,7 +23,7 @@
     <a href="/provenance" class="step-tab step-tab-secondary">Data &amp; Sources</a>
   </div>
   <h1>Step C — Final Assembly vs. DIN 18202</h1>
-  <p class="subtitle">The finished wall (frame + panels), checked as one building element. Reuses Step A's squareness/dimension checks and Step B's joint check, plus a new panel-to-panel thickness step check.</p>
+  <p class="subtitle">The assembled wall (frame + panels), checked as one building element. Reuses Step A's squareness/dimension checks and Step B's joint check, plus a new panel-to-panel thickness step check.</p>
 </header>
 
 <main>
@@ -37,15 +37,14 @@
       <input type="number" id="wallHeight" value="250" step="1">
       <label>Framing material</label>
       <select id="framingMaterial">
-        <option value="kvh">KVH (EN 15497 / DIN 4074)</option>
+        <option value="kvh">KVH (EN 336, DIN 4074-1)</option>
         <option value="glulam" selected>Glulam / GLT (DIN EN 14080)</option>
-        <option value="lvl">LVL / Kerto (EN 14374)</option>
       </select>
       <div id="kvhClassGroup" style="display:none">
         <label>KVH class</label>
         <select id="kvhClass">
-          <option value="class1">Class 1</option>
-          <option value="class2">Class 2</option>
+          <option value="class1">EN 336 tolerance class 1</option>
+          <option value="class2">EN 336 tolerance class 2</option>
         </select>
       </div>
       <label>Number of studs (incl. end studs)</label>
@@ -77,7 +76,6 @@
         <option value="osb" selected>OSB (EN 300)</option>
         <option value="plywood">Plywood (DIN EN 315)</option>
         <option value="particleboard">Particleboard (EN 312)</option>
-        <option value="clt">CLT (EN 16351)</option>
         <option value="mdf_family">MDF-family (EN 622)</option>
         <option value="gfb_gpb">Gypsum (DIN EN 520)</option>
       </select>
@@ -108,7 +106,7 @@
         <option value="unsanded" selected>Unsanded</option>
         <option value="sanded">Sanded</option>
       </select>
-      <p class="hint">Only used for OSB/Plywood/Particleboard - CLT's thickness formula doesn't have a sanded/unsanded split.</p>
+      <p class="hint">Only used for OSB/Plywood/Particleboard.</p>
       <label>Target finish class (for the joint-step flatness check)</label>
       <select id="finishClass">
         <option value="unfinished_wall" selected>Unfinished wall</option>
@@ -124,7 +122,7 @@
     <div class="panel viewer-panel">
       <h2>3D Final Assembly</h2>
       <div id="viewer3d"></div>
-      <p class="hint">Solid panel face = finished wall. Faint lines behind = frame reference. Banner = overall DIN 18202 verdict (RSS).</p>
+      <p class="hint">Solid panel face = panels as assembled on the frame. Faint lines behind = frame reference. Banner = overall DIN 18202 verdict (RSS).</p>
       <div class="view-controls">
         <button type="button" class="view-btn" id="btnPerspective">3D Perspective</button>
         <button type="button" class="view-btn" id="btnFrontView">Front View (Parallel)</button>

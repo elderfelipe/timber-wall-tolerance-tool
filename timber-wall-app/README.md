@@ -25,9 +25,6 @@ Open http://127.0.0.1:5001
   reference images — plain wood tone frame, orange overlay for tolerance
   callouts.
 - **Three tolerance-performance graphs** (Chart.js), described below.
-- **Corrected data**: the LVL thickness formula ±(0.8+0.03t) was previously
-  mis-attributed to Glulam — the EN 14374 footnote in your updated PDF ties
-  it to LVL. Fixed in this version.
 
 ## Methodology — why the numbers come out the way they do
 
@@ -37,7 +34,7 @@ of the components, not just their target values. So the pipeline is:
 
 1. **Component-level tolerance** — the wall's overall length is treated as
    governed by the top/bottom beam as one continuous member (its own
-   length tolerance, from EN 336/DIN 4074/EN 14080/EN 14374 depending on
+   length tolerance, from EN 336/DIN 4074/EN 14080 depending on
    material). The wall's height is governed by the stud, the same way.
 2. **Assembly-level tolerance** — DIN 18202's "dimensions in plan" (for
    length) and "dimensions in elevation" (for height) add an independent
@@ -106,3 +103,18 @@ state rather than being independent forms:
 I'd suggest confirming Step A matches what you had in mind (numbers,
 overlay style, chart usefulness) before I build B — cheaper to adjust the
 frame model now than after panels and openings depend on it.
+
+## Asymmetric limits (assumption A9 / B5)
+Where a standard's limit is asymmetric (e.g. EN 336 class 1 width -1/+3 mm,
+gypsum Type P width 0/-8 mm), the limit is NOT reduced to one symmetric
+number. The plus side and the minus side are each combined with the
+DIN 18202 allowance separately and both are reported. The headline value is
+the side that gives the larger result (the governing side), so a pass means
+that both sides pass. Step C already worked per side. Earlier versions used
+the plus value only, which gave 0 for gypsum board.
+
+## Squareness comparison at exactly the limit
+A squareness value equal to the DIN 18202 limit passes ("not more than"). The
+comparison in geometry.py allows 1e-9 mm of floating-point noise, so a value that
+is mathematically 16 mm no longer fails against a 16 mm limit (seen for a 6 m wall
+at 3.45 m height, where the RSS diagonal tolerance equals the limit exactly).

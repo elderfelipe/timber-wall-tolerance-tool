@@ -23,8 +23,8 @@ numbering as B1, B2... since this builds directly on Step A's frame):
       members). Rather than silently assume blocking exists, multi-row
       layouts are not offered - if the target sheet height is less than
       the wall height, this is flagged as a limitation, not solved.
-  B3. ALL SIX sheeting materials from the source tables are supported:
-      OSB, Plywood, Particleboard, CLT (flat 'fixed' tolerances), plus
+  B3. ALL FIVE sheeting materials from the source tables are supported:
+      OSB, Plywood, Particleboard (flat 'fixed' tolerances), plus
       MDF-family (4 board sub-types: Hardboard/Mediumboard/Softboard/
       Dry-process, sharing one rate-based ±2mm/m-capped length/width
       formula but each with their own thickness bands) and Gypsum
@@ -67,7 +67,6 @@ def get_material_label(materials, material_key, subtype=None):
 def get_sheeting_dimension_tolerance(materials, material_key, dimension, target_size_m=None, subtype=None):
     """Returns (plus_mm, minus_mm, verified, note) for a sheeting panel's
     'length' or 'width'.
-    - CLT stores these under a 'product' sub-key.
     - MDF-family shares one RATE-based formula (±2mm/m, capped) across all
       four board types, so it needs target_size_m (the panel's own actual
       length/width in meters) rather than a flat value.
@@ -93,8 +92,6 @@ def get_sheeting_dimension_tolerance(materials, material_key, dimension, target_
         if subtype not in ("type_p", "types_ahdefir"):
             return None, None, False, "gfb_gpb requires a subtype ('type_p' or 'types_ahdefir')"
         spec = m.get(subtype, {}).get(dimension)
-    elif material_key == "clt":
-        spec = m.get("product", {}).get(dimension)
     else:
         spec = m.get("dimensions", {}).get(dimension)
 
@@ -108,7 +105,7 @@ def get_sheeting_dimension_tolerance(materials, material_key, dimension, target_
 def build_panels(config, materials, din, frame_result):
     """
     config: {
-      "panel_material": "osb"|"plywood"|"particleboard"|"clt"|"mdf_family"|"gfb_gpb",
+      "panel_material": "osb"|"plywood"|"particleboard"|"mdf_family"|"gfb_gpb",
       "panel_subtype": null | "hardboard"|"mediumboard"|"softboard"|"dry_process" (mdf_family)
                              | "type_p"|"types_ahdefir" (gfb_gpb),
       "target_sheet_width_cm": float,
@@ -170,22 +167,41 @@ def build_panels(config, materials, din, frame_result):
     elif not verified:
         warnings.append(f"Panel width tolerance for '{material}'{f'/{subtype}' if subtype else ''} is unverified: {note}")
 
+    # B5. ASYMMETRIC LIMITS: the plus side and the minus side of the panel width
+    #     limit are each combined with the stud positional tolerance
+    #     separately (e.g. gypsum Type P, 0/-8 mm: plus side 0 mm, minus side
+    #     8 mm). The headline value is the governing (larger) side, so a pass
+    #     means both sides pass. No value is assumed.
     # --- B4: joint interface tolerance (per joint, i.e. per interior stud)
     datum_align_mm = lookup_din18202_alignment(din, wall_height_cm / 100.0)
     stud_width_mm = frame_result["config"]["stud_width_mm"]
-
-    joint_wc = None if width_plus_mm is None else (width_plus_mm + datum_align_mm)
-    joint_rss = None if width_plus_mm is None else math.sqrt(width_plus_mm ** 2 + datum_align_mm ** 2)
     half_stud_mm = stud_width_mm / 2.0
 
+    sides = None
+    if width_plus_mm is not None:
+        sides = {}
+        for side, w in (("plus", width_plus_mm), ("minus", width_minus_mm)):
+            wc = w + datum_align_mm
+            rss = math.sqrt(w ** 2 + datum_align_mm ** 2)
+            sides[side] = {"panel_width_mm": w, "worst_case_mm": wc, "rss_mm": rss,
+                           "pass_worst_case": wc <= half_stud_mm, "pass_rss": rss <= half_stud_mm}
+        gov = "plus" if sides["plus"]["rss_mm"] >= sides["minus"]["rss_mm"] else "minus"
+        sides["governing"] = gov
+    width_gov_mm = None if sides is None else sides[sides["governing"]]["panel_width_mm"]
+    joint_wc = None if sides is None else sides[sides["governing"]]["worst_case_mm"]
+    joint_rss = None if sides is None else sides[sides["governing"]]["rss_mm"]
+
     joint_check = {
-        "panel_width_tolerance_mm": width_plus_mm,
+        "panel_width_tolerance_mm": width_gov_mm,
+        "panel_width_plus_mm": width_plus_mm,
+        "panel_width_minus_mm": width_minus_mm,
+        "sides": sides,
         "stud_positional_tolerance_mm": datum_align_mm,
         "combined_worst_case_mm": joint_wc,
         "combined_rss_mm": joint_rss,
         "half_stud_width_mm": half_stud_mm,
-        "pass_worst_case": (joint_wc <= half_stud_mm) if joint_wc is not None else None,
-        "pass_rss": (joint_rss <= half_stud_mm) if joint_rss is not None else None,
+        "pass_worst_case": None if sides is None else all(sides[s]["pass_worst_case"] for s in ("plus", "minus")),
+        "pass_rss": None if sides is None else all(sides[s]["pass_rss"] for s in ("plus", "minus")),
         "note": (
             "Combines the panel's own width tolerance with the frame's stud "
             "positional tolerance (same DIN 18202 alignment-deviation figure "

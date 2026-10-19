@@ -20,9 +20,9 @@ import math
 
 def compute_sensitivity(frame_result, panel_result, assembly_result):
     tol = frame_result["tolerances"]
-    L_mat = tol["length"]["material_plus_mm"]
+    L_mat = tol["length"]["material_governing_mm"]
     L_din = tol["length"]["din_mm"]
-    H_mat = tol["height"]["material_plus_mm"]
+    H_mat = tol["height"]["material_governing_mm"]
     H_din = tol["height"]["din_mm"]
     D_mm = tol["diagonal"]["nominal_cm"] * 10.0
     L_mm = tol["length"]["target_cm"] * 10.0

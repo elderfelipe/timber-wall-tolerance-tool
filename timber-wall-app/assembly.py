@@ -30,7 +30,7 @@ Modeling assumptions (continuing A1-A8, B1-B4 numbering as C1, C2...):
       tolerance. Same style of proxy as Step A's squareness check
       (angular deviation table standing in for a purpose-built
       frame-squareness spec) - a defensible choice, not a certainty.
-  C3. ALL SIX sheeting materials are supported (matching Step B - see its
+  C3. ALL FIVE sheeting materials are supported (matching Step B - see its
       B3 for the full breakdown). MDF-family and Gypsum's Types A-R have
       real gaps of their own even so: MDF's thickness data doesn't
       distinguish sanded/unsanded (the 'variant' parameter is simply
@@ -50,14 +50,9 @@ from geometry import lookup_din18202_flatness
 
 def get_sheeting_thickness_tolerance(materials, material_key, target_thickness_mm, variant=None, subtype=None):
     """Returns (plus_mm, minus_mm, verified, note) for a sheeting panel's
-    thickness at a given nominal thickness. Handles all six data shapes
+    thickness at a given nominal thickness. Handles all data shapes
     present across the supported materials."""
     m = materials["sheeting"][material_key]
-
-    if material_key == "clt":
-        spec = m["product"]["thickness"]
-        val = max(spec["option_a_mm"], target_thickness_mm * spec["option_b_percent_of_nominal"] / 100.0)
-        return val, val, spec.get("verified", False), spec.get("note")
 
     if material_key == "plywood":
         spec = m["dimensions"]["thickness"]  # type: plywood_thickness_table
